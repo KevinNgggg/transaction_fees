@@ -1,10 +1,11 @@
-from flask import Flask, jsonify, request
 from flasgger import Swagger
+from flask import Flask, jsonify
 
 app = Flask(__name__)
 swagger = Swagger(app)
 
-@app.route('/hello', methods=['GET'])
+
+@app.route("/hello", methods=["GET"])
 def hello():
     """
     This endpoint returns a hello message.
@@ -18,7 +19,8 @@ def hello():
             message:
               type: string
     """
-    return jsonify({'message': 'Hello, World!'})
+    return jsonify({"message": "Hello, World!"})
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app.run(debug=True)
