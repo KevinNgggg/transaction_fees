@@ -1,7 +1,7 @@
 from typing import Dict, Any, Optional, List
-from unittest.mock import AsyncMock, patch
 
 import pytest
+
 from src.transaction_fee_tracker import TransactionFeeTracker
 
 
@@ -49,6 +49,15 @@ class TestTransactionFeeTracker:
         transaction_fee_tracker.set_request_responses([
             {'result': 100},
             {'result': []}
+        ])
+        await transaction_fee_tracker.poll_transactions()
+        assert transaction_fee_tracker._num_api_calls == 1
+
+    @pytest.mark.asyncio
+    async def test_poll_transactions_with_error_on_new_block(self):
+        transaction_fee_tracker = MockTransactionFeeTracker('fake_api_key')
+        transaction_fee_tracker.set_request_responses([
+            {'result': None},
         ])
         await transaction_fee_tracker.poll_transactions()
         assert transaction_fee_tracker._num_api_calls == 1

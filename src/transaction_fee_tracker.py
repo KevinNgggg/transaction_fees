@@ -16,7 +16,6 @@ class TransactionFeeTracker:
         self._logger.info(f"TransactionFeeTracker created with url={self._url}")
 
     async def _make_get_request(self, params: Dict[Any, Any]) -> Optional[Dict[Any, Any]]:
-        print("AM BEING CALLED")
         self._logger.info(f"Making Request: params={params}")
         try:
             async with aiohttp.ClientSession() as session:
@@ -73,6 +72,9 @@ class TransactionFeeTracker:
 
     async def poll_transactions(self):
         latest_block = await self.get_latest_block()
+        if latest_block is None:
+            self._logger.error(f"Could not get latest block")
+            return
         if latest_block > self._latest_block_seen:
             self._logger.info(
                 f"Polling transactions... latest_block={latest_block}, latest_block_seen={self._latest_block_seen}")
