@@ -25,12 +25,21 @@ class TestTransactionFeeTracker:
         actual_txn_fee = transaction_fee_tracker.get_transaction_fee('0x12345')
         assert actual_txn_fee is None
 
-    @pytest.mark.parametrize("gas_price, gas_used, txn_hash", [(None, 10**18, '0x12345'), (1, None, '12345'), (1, -10**18, None)])
+    @pytest.mark.parametrize("gas_price, gas_used, txn_hash", [(None, 10**18, '0x12345'), (1, None, '12345'), (1, -10**18, None), ("10a10", 10**18, '0x12345')])
     def test_parse_historical_transactions_with_bad_messages(self, gas_price, gas_used, txn_hash):
         transaction_fee_tracker = MockTransactionFeeTracker('fake_api_key')
         with pytest.raises(Exception):
             transaction_fee_tracker._parse_historical_transactions(
                 [{'gasPrice': gas_price, 'gasUsed': gas_used, 'hash': txn_hash}])
+
+    @pytest.mark.parametrize("gas_price, gas_used, txn_hash, expected_txn_fee", [("100", 10**18, "0x12345", 100), (10**17, "1000", "0x12345", 100)])
+    def test_parse_historical_transactions_with_non_integer_types(self, gas_price, gas_used, txn_hash, expected_txn_fee):
+        transaction_fee_tracker = MockTransactionFeeTracker('fake_api_key')
+        transaction_fee_tracker._latest_block_seen = 100
+        transaction_fee_tracker._parse_historical_transactions(
+            [{'gasPrice': gas_price, 'gasUsed': gas_used, 'hash': txn_hash}])
+        actual_txn_fee = transaction_fee_tracker.get_transaction_fee(txn_hash)
+        assert expected_txn_fee == actual_txn_fee
 
     @pytest.mark.asyncio
     async def test_poll_transactions_with_no_new_transactions(self):

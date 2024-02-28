@@ -13,7 +13,7 @@ class TransactionFeeTracker:
         self._transaction_hash_to_fee_map = {}
         self._latest_block_seen = 0
         self._url = 'https://api.etherscan.io/api'
-        self._logger.info(f"TransactionFeeTracker created with url={self._url}")
+        self._logger.info(f"TransactionFeeTracker created with url={self._url} {self._api_key}")
 
     async def _make_get_request(self, params: Dict[Any, Any]) -> Optional[Dict[Any, Any]]:
         self._logger.info(f"Making Request: params={params}")
@@ -31,7 +31,7 @@ class TransactionFeeTracker:
             'module': 'block',
             'action': 'getblocknobytime',
             'timestamp': str(int(datetime.datetime.utcnow().timestamp())),
-            'closest': 'after'
+            'closest': 'before'
         }
 
     def _get_historical_transactions_params(self) -> Dict[str, Any]:
@@ -50,7 +50,7 @@ class TransactionFeeTracker:
     async def get_latest_block(self):
         params = self._get_latest_block_params()
         response = await self._make_get_request(params)
-        if response is None or not isinstance(response, dict) or 'result' not in response:
+        if response is None or not isinstance(response, dict) or 'result' not in response or response['result'] is None:
             return
         self._logger.info(f"Returned latest block message: {response}")
         latest_block = int(response['result'])
@@ -67,10 +67,10 @@ class TransactionFeeTracker:
 
     def _parse_historical_transactions(self, transactions: List[Dict[Any, Any]]):
         for transaction in transactions:
-            txn_hash = transaction['hash']
-            txn_fee = transaction['gasPrice'] * transaction['gasUsed'] / 10 ** 18
-            if txn_hash is None:
+            if transaction['hash'] is None:
                 raise Exception('Transaction hash found to be None')
+            txn_hash = str(transaction['hash'])
+            txn_fee = int(transaction['gasPrice']) * int(transaction['gasUsed']) / 10 ** 18
             self._transaction_hash_to_fee_map[txn_hash] = txn_fee
 
     async def poll_transactions(self):
