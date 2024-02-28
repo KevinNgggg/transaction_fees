@@ -22,13 +22,15 @@ class TransactionFeeTracker:
                 async with session.get(self._url, params=params) as response:
                     return await response.json()
         except aiohttp.CLientError as e:
-            self._logger.error(f"Unable to get data for request_params={params}")
+            self._logger.error(f"Unable to get data for request_params={params}, error={e}")
+        except Exception as e:
+            self._logger.error(f"Error {e}")
 
     def _get_latest_block_params(self) -> Dict[str, Any]:
         return {
             'module': 'block',
             'action': 'getblocknobytime',
-            'timestamp': datetime.datetime.utcnow().timestamp(),
+            'timestamp': str(int(datetime.datetime.utcnow().timestamp())),
             'closest': 'after'
         }
 
@@ -50,7 +52,8 @@ class TransactionFeeTracker:
         response = await self._make_get_request(params)
         if response is None or not isinstance(response, dict) or 'result' not in response:
             return
-        latest_block = response['result']
+        self._logger.info(f"Returned latest block message: {response}")
+        latest_block = int(response['result'])
         self._logger.info(f"Latest block: {latest_block}")
         return latest_block
 
@@ -89,12 +92,12 @@ class TransactionFeeTracker:
                 await self.poll_transactions()
             except Exception as e:
                 self._logger.error(f"Unable to poll transactions due to {e}")
-            await asyncio.sleep(1)
+            await asyncio.sleep(10)
 
     def coros(self):
         return [self.periodic_poll_transactions()]
 
     def get_transaction_fee(self, transaction_hash: str) -> Optional[float]:
-        if self._latest_block_seen == 0 or transaction_hash not in self._transaction_hash_to_fee_map:
+        if self._latest_block_seen == 0 or transaction_hash is None or transaction_hash not in self._transaction_hash_to_fee_map:
             return
         return self._transaction_hash_to_fee_map[transaction_hash]
