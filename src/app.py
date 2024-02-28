@@ -43,6 +43,8 @@ async def startup(app: web.Application) -> None:
         config = yaml.load(f, Loader=yaml.Loader)
 
     transaction_fee_tracker = TransactionFeeTracker(config.get("api_key"))
+    if config.get("do_backfill", False):
+        await transaction_fee_tracker.startup_polling()
     app["transaction_fee_tracker"] = transaction_fee_tracker
     tasks = []
     for coro in transaction_fee_tracker.coros():
