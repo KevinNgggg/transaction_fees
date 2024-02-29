@@ -26,3 +26,13 @@ in the header.
   - Benefit is that we do not wait too long
 ## Server Implementation
 - A simple server is sufficient, as there is minimal CPU computations here. If we expect high loads, we would implement a queue and load balance the work across multiple instances
+
+# Problems faced by this question
+- It seems like using an API with very low rate limits (and with alot of data needed to load) is a really bad idea. A better idea would be to use Web3 to query the data, or pre-save the data in a database
+- Pre-saving is impossible for this assignment because I would need you to run a script for backfilling first (which will take forever)
+- Using Web3 introduces alot of latency to each request which kind of defeat the purpose of this service (since querying web3 yourself is easier)
+- Another possible solution would be to have a background task to keep polling for transactions, and keeping count of which blocks were visited. However, this makes it such that I have to implement rate limiters, and each query to the service requires a check on which block the transaction belongs to. Once again, too much latency
+- Therefore, based on the above problems, I decided to add a flag on whether to backfill or not. Else, we can just get live data.
+
+# Points to note of my solution
+- I've decided to use daily Binance prices to price ETH. Rationale for this is that if we assume prices to not fluctuate much, we can very much just use start of day price to give an approximation. If we decide that we want to get more accurate data, once again, proper solution of persisting the data we want is much more efficient, and not feasible for this take home assignment

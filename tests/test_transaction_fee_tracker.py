@@ -54,11 +54,20 @@ class TestTransactionFeeTracker:
         self, gas_price, gas_used, txn_hash, expected_txn_fee
     ):
         transaction_fee_tracker = MockTransactionFeeTracker("fake_api_key")
-        transaction_fee_tracker._latest_price_last_updated = datetime.datetime.fromtimestamp(1709049600)
+        transaction_fee_tracker._latest_price_last_updated = (
+            datetime.datetime.fromtimestamp(1709049600)
+        )
         transaction_fee_tracker._latest_price = 1
         transaction_fee_tracker._latest_block_seen = 100
         transaction_fee_tracker._parse_historical_transactions(
-            [{"gasPrice": gas_price, "gasUsed": gas_used, "hash": txn_hash, 'timeStamp': 1620250931}]
+            [
+                {
+                    "gasPrice": gas_price,
+                    "gasUsed": gas_used,
+                    "hash": txn_hash,
+                    "timeStamp": 1620250931,
+                }
+            ]
         )
         actual_txn_fee = transaction_fee_tracker.get_transaction_fee(txn_hash)
         assert expected_txn_fee == actual_txn_fee
@@ -102,14 +111,21 @@ class TestTransactionFeeTracker:
         self, gas_price, gas_used, txn_hash, expected_txn_fee
     ):
         transaction_fee_tracker = MockTransactionFeeTracker("fake_api_key")
-        transaction_fee_tracker._latest_price_last_updated = datetime.datetime.fromtimestamp(1709049600)
+        transaction_fee_tracker._latest_price_last_updated = (
+            datetime.datetime.fromtimestamp(1709049600)
+        )
         transaction_fee_tracker._latest_price = 1
         transaction_fee_tracker.set_request_responses(
             [
                 {"result": 100},
                 {
                     "result": [
-                        {"gasPrice": gas_price, "gasUsed": gas_used, "hash": txn_hash, 'timeStamp': 1620250931}
+                        {
+                            "gasPrice": gas_price,
+                            "gasUsed": gas_used,
+                            "hash": txn_hash,
+                            "timeStamp": 1620250931,
+                        }
                     ]
                 },
             ]
